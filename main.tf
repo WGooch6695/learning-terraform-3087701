@@ -1,3 +1,4 @@
+# Unsure what this does
 data "aws_ami" "app_ami" {
   most_recent = true
 
@@ -14,23 +15,25 @@ data "aws_ami" "app_ami" {
   owners = ["979382823631"] # Bitnami
 }
 
+# Create public vpc using the vpc module
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
   name = "dev"
   cidr = "10.0.0.0/16"
 
-  azs             = ["us-east-1"]
+  azs             = ["us-east-1a"]
   public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
 
   enable_nat_gateway = true
 
   tags = {
-    Terraform = "true"
+    Terraform   = "true"
     Environment = "dev"
   }
 }
 
+# create a web server to host the blog
 resource "aws_instance" "blog" {
   ami                    = data.aws_ami.app_ami.id
   instance_type          = var.instance_type
@@ -41,6 +44,7 @@ resource "aws_instance" "blog" {
   }
 }
 
+# create a security group for the blog web server
 module "blog_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "4.17.1"
